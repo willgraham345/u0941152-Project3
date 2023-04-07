@@ -43,15 +43,14 @@ except ImportError:
 
 
 _NUM_DOF = 7  # Number of robot arm degrees of freedom
-_3D_DOF = 3  # Degrees of freedom for task space
-    
+_3D_DOF = 3  # Degrees of freedom for task space    
 
 class LBR4TrajectoryOptimization:
     def __init__(self):
         self.render_obstacle = False
         self.lbr4 = LBR4Kinematics()
         # These are the goal/obstacle positions for collision avoidance
-        self.goal_position = [0.0, 0.8, 0.5]
+        self.goal_position = [0.0, 0.5, 1.0]
         self.obstacle_position = [0.0, 0.4, 1.0]
 
         # Initialize optimization lists. These store the optimization variables
@@ -84,10 +83,15 @@ class LBR4TrajectoryOptimization:
             Output:
                 Symbolic computation of cost according to 1.1 description
             """
+            
 
             # YOUR CODE HERE (make sure you change the return value)
-
-            return None 
+            x = self.lbr4.get_ee_position(theta)
+            diff = x-x_goal
+            sqr = diff**2
+            cost = SX.fabs(sqr[0]+sqr[1]+sqr[2])
+            
+            return cost
         #                                                                    #
         # END cost function definition                                       #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
