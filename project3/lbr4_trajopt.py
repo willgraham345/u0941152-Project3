@@ -281,8 +281,8 @@ class LBR4TrajectoryOptimization:
         #---------------------------------------------------------------------#
         #                                                                     #
         self.g += [self.goal_position-self.lbr4.get_ee_position(theta_N)]
-        self.lbg += [0 for _ in range(_NUM_DOF)]
-        self.ubg += [0 for _ in range(_NUM_DOF)]
+        self.ubg += [0.0 for _ in range(_3D_DOF)]
+        self.lbg += [0.0 for _ in range(_3D_DOF)]
             # YOUR CODE HERE
 
         #                                                                     #
@@ -296,9 +296,9 @@ class LBR4TrajectoryOptimization:
         #                                                                     #
         
             # YOUR CODE HERE
-        # self.v_end += [theta_N-theta_prev]
-        # self.lbg_v_end += [0 for _ in range(_NUM_DOF)]
-        # self.ubg_v_end += [0 for _ in range(_NUM_DOF)]
+        self.g += [theta_N-theta_prev]
+        self.lbg += [0.0 for _ in range(_NUM_DOF)]
+        self.ubg += [0.0 for _ in range(_NUM_DOF)]
 
         #                                                                     #
         # END add equality constraint                                         #
@@ -345,9 +345,16 @@ class LBR4TrajectoryOptimization:
                 Symbolic computation of cost according to 1.3 description
             """
  
-            # YOUR CODE HERE (make sure you change the return value)
+            x = self.lbr4.get_ee_position(theta)
+            diff = x-x_goal
+            sqr = diff**2
+            cost1 = SX.fabs(sqr[0]+sqr[1]+sqr[2])
 
-            return None 
+            diff2 = theta-theta_prev
+            sqr2 = diff2**2
+            cost2 = alpha*SX.fabs(sqr2[0]+sqr2[1]+sqr2[2]+sqr2[3]+sqr2[4]+sqr2[5]+sqr2[6])
+            cost = cost1+cost2
+            return cost
         #                                                                    #
         # END cost function definition                                       #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -410,9 +417,11 @@ class LBR4TrajectoryOptimization:
         # TODO: Add an equality constraint that forces the end-effector       #
         # position to coincide with the goal position.                        #
         #                                                                     #
-        
-            # YOUR CODE HERE (copy this constraint from the previous problem)
-
+        term1 = (self.lbr4.get_ee_position(theta) - self.goal_position)**2
+        term2 = alpha*(theta-theta_prev)**2
+        self.g += [term1 - term2]
+        self.ubg += [0.0 for _ in range(_3D_DOF)]
+        self.lbg += [0.0 for _ in range(_3D_DOF)]
         #                                                                     #
         # END add equality constraint                                         #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -457,10 +466,17 @@ class LBR4TrajectoryOptimization:
             Output:
                 Symbolic computation of cost according to 2 description
             """
- 
-            # YOUR CODE HERE (make sure you change the return value)
 
-            return None 
+            x = self.lbr4.get_ee_position(theta)
+            diff = x-x_goal
+            sqr = diff**2
+            cost1 = SX.fabs(sqr[0]+sqr[1]+sqr[2])
+
+            diff2 = theta-theta_prev
+            sqr2 = diff2**2
+            cost2 = alpha*SX.fabs(sqr2[0]+sqr2[1]+sqr2[2]+sqr2[3]+sqr2[4]+sqr2[5]+sqr2[6])
+            cost = cost1+cost2
+            return cost
         #                                                                    #
         # END cost function definition                                       #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -511,6 +527,9 @@ class LBR4TrajectoryOptimization:
             #                                                                 #
             
                 # COPY this constraint from previous problem
+            self.g += [theta_k-theta_prev]
+            self.lbg += [-gamma for _ in range(_NUM_DOF)]
+            self.ubg += [gamma for _ in range(_NUM_DOF)]
 
             #                                                                 #
             # END add inequlaity constaint                                    #
@@ -533,7 +552,9 @@ class LBR4TrajectoryOptimization:
         #                                                                     #
 
             # COPY this constraint from previous problem
-        
+        self.g += [theta_N-theta_prev]
+        self.lbg += [0.0 for _ in range(_NUM_DOF)]
+        self.ubg += [0.0 for _ in range(_NUM_DOF)]
         #                                                                     #
         # END add equality constraint                                         #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -544,6 +565,9 @@ class LBR4TrajectoryOptimization:
         #                                                                     #
       
             # COPY this constraint from previous problem
+        self.g += [self.goal_position-self.lbr4.get_ee_position(theta_N)]
+        self.ubg += [0.0 for _ in range(_3D_DOF)]
+        self.lbg += [0.0 for _ in range(_3D_DOF)]
 
         #                                                                     #
         # END add equality constraint                                         #

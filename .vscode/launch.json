@@ -25,14 +25,33 @@
             "console": "integratedTerminal",
         }
         {
-            "name": "p1.2, gamma = 0.008, beta = 5",
+            "name": "p1.2, gamma = 0.25",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/project3/lbr4_trajopt.py",
             "justMyCode": true,
             "clearTerminalBeforeRun": true,
-            "args": ["-p", "1.2", "-g", "0.008", "-b", "5"],
+            "args": ["-p", "1.2", "-g", "0.25"],
             "console": "integratedTerminal",
+        }
+        {
+            "name": "p1.3, g = 0.008, a = 0.1",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/project3/lbr4_trajopt.py",
+            "justMyCode": true,
+            "clearTerminalBeforeRun": true,
+            "args": ["-p", "1.2", "-g", "0.008", "-a", "0.1"],
+            "console": "integratedTerminal",
+        }
+        {
+            "name": "p2.1, g = 0.008, b = 0.1",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/project3/lbr4_trajopt.py",
+            "justMyCode": true,
+            "clearTerminalBeforeRun": true,
+            "args": ["-p", "2.1", "-g", "0.008", "-b", "0.1"],
         }
     ]
 }
