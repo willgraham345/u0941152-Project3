@@ -113,6 +113,7 @@ class LBR4TrajectoryOptimization:
 
         # Set the EE goal position for the robot to reach to
         self.goal_position = self.lbr4.generate_random_ee_position()
+        print("goal_joint_position: ", self.goal_position)
 
         # Add symbolic variables to build the optimization problem for N-2
         # timesteps (Note: it's N-2 because we handle the first and last
@@ -165,7 +166,7 @@ class LBR4TrajectoryOptimization:
         trajectory = np.vsplit(soln['x'].full(), self.num_timesteps)
         return trajectory
 
-    def compute_trajectory_1_2(self, gamma=0.005):
+    def compute_trajectory_1_2(self, gamma=0.008):
         """
         Setup the optimization problem for 1.2 and run the solver.
         Input:
@@ -190,7 +191,7 @@ class LBR4TrajectoryOptimization:
             diff = x-x_goal
             sqr = diff**2
             cost = SX.fabs(sqr[0]+sqr[1]+sqr[2])
-            return None 
+            return cost
         #                                                                    #
         # END cost function definition                                       #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -246,7 +247,7 @@ class LBR4TrajectoryOptimization:
             #-----------------------------------------------------------------#
             #                                                                 #
 
-                # YOUR CODE HERE
+            # YOUR CODE HERE
             self.g += [theta_k-theta_prev]
             self.lbg += [-gamma for _ in range(_NUM_DOF)]
             self.ubg += [gamma for _ in range(_NUM_DOF)]
@@ -279,7 +280,9 @@ class LBR4TrajectoryOptimization:
         # inequality constraints to be equal.)                                #
         #---------------------------------------------------------------------#
         #                                                                     #
-        
+        self.g += [self.goal_position-self.lbr4.get_ee_position(theta_N)]
+        self.lbg += [0 for _ in range(_NUM_DOF)]
+        self.ubg += [0 for _ in range(_NUM_DOF)]
             # YOUR CODE HERE
 
         #                                                                     #
@@ -293,6 +296,9 @@ class LBR4TrajectoryOptimization:
         #                                                                     #
         
             # YOUR CODE HERE
+        # self.v_end += [theta_N-theta_prev]
+        # self.lbg_v_end += [0 for _ in range(_NUM_DOF)]
+        # self.ubg_v_end += [0 for _ in range(_NUM_DOF)]
 
         #                                                                     #
         # END add equality constraint                                         #

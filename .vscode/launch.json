@@ -15,7 +15,7 @@
             "clearTerminalBeforeRun": true,
         }
         {
-            "name": "Default p1",
+            "name": "p1.1",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/project3/lbr4_trajopt.py",
@@ -25,23 +25,13 @@
             "console": "integratedTerminal",
         }
         {
-            "name": "P1, gamma = 0.1",
+            "name": "p1.2, gamma = 0.008, beta = 5",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/project3/lbr4_trajopt.py",
             "justMyCode": true,
             "clearTerminalBeforeRun": true,
-            "args": ["-p", "1.1", "-g", "0.1"],
-            "console": "integratedTerminal",
-        }
-        {
-            "name": "P2, gamma = 0.1, beta = 5",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/project3/lbr4_trajopt.py",
-            "justMyCode": true,
-            "clearTerminalBeforeRun": true,
-            "args": ["-p", "2.1", "-g", "0.1", "-b", "5"],
+            "args": ["-p", "1.2", "-g", "0.008", "-b", "5"],
             "console": "integratedTerminal",
         }
     ]
