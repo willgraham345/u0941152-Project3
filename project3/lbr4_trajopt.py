@@ -185,9 +185,11 @@ class LBR4TrajectoryOptimization:
             Output:
                 Symbolic computation of cost according to 1.2 description
             """
-
-            # COPY your cost function from 1.1
-
+            # YOUR CODE HERE (make sure you change the return value)
+            x = self.lbr4.get_ee_position(theta)
+            diff = x-x_goal
+            sqr = diff**2
+            cost = SX.fabs(sqr[0]+sqr[1]+sqr[2])
             return None 
         #                                                                    #
         # END cost function definition                                       #
@@ -245,6 +247,9 @@ class LBR4TrajectoryOptimization:
             #                                                                 #
 
                 # YOUR CODE HERE
+            self.g += [theta_k-theta_prev]
+            self.lbg += [-gamma for _ in range(_NUM_DOF)]
+            self.ubg += [gamma for _ in range(_NUM_DOF)]
 
             #                                                                 #
             # END add inequlaity constaint                                    #
