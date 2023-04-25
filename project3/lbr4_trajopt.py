@@ -41,21 +41,21 @@ except ImportError:
     print("Import of casadi failed. Make sure it's installed on your system.")
     sys.exit(1)
 
-
+_GOAL_POS = [0.3, 0.3, 0.3]  # Goal position for EE
 _NUM_DOF = 7  # Number of robot arm degrees of freedom
-_3D_DOF = 3  # Degrees of freedom for task space    
+_3D_DOF = 3  # Degrees of freedom for task space
 
 class LBR4TrajectoryOptimization:
     def __init__(self):
         self.render_obstacle = False
         self.lbr4 = LBR4Kinematics()
         # These are the goal/obstacle positions for collision avoidance
-        self.goal_position = [0.0, 0.5, 1.0]
+        self.goal_position = [0.0, 0.8, 0.5]
         self.obstacle_position = [0.0, 0.4, 1.0]
 
         # Initialize optimization lists. These store the optimization variables
         # and any constraints for each timestep.
-        self.num_timesteps = 300   # Number of timesteps to optimize over (N)
+        self.num_timesteps = 700   # Number of timesteps to optimize over (N)
         self.theta_trajectory = [] # Joint position trajectory, length N
         self.theta_guess = []      # Initial trajectory for optimization, length N
         self.lb_theta = []         # Lower bounds on joint positions, length N
@@ -86,11 +86,7 @@ class LBR4TrajectoryOptimization:
             
 
             # YOUR CODE HERE (make sure you change the return value)
-            x = self.lbr4.get_ee_position(theta)
-            diff = x-x_goal
-            sqr = diff**2
-            cost = SX.fabs(sqr[0]+sqr[1]+sqr[2])
-            
+            cost = norm_2(self.lbr4.get_ee_position(theta)-x_goal)**2
             return cost
         #                                                                    #
         # END cost function definition                                       #
@@ -113,7 +109,8 @@ class LBR4TrajectoryOptimization:
 
         # Set the EE goal position for the robot to reach to
         self.goal_position = self.lbr4.generate_random_ee_position()
-        print("goal_joint_position: ", self.goal_position)
+        # self.goal_position = _GOAL_POS
+        print("Goal position: ", self.goal_position)
 
         # Add symbolic variables to build the optimization problem for N-2
         # timesteps (Note: it's N-2 because we handle the first and last
@@ -187,10 +184,7 @@ class LBR4TrajectoryOptimization:
                 Symbolic computation of cost according to 1.2 description
             """
             # YOUR CODE HERE (make sure you change the return value)
-            x = self.lbr4.get_ee_position(theta)
-            diff = x-x_goal
-            sqr = diff**2
-            cost = SX.fabs(sqr[0]+sqr[1]+sqr[2])
+            cost = norm_2(self.lbr4.get_ee_position(theta)-x_goal)**2
             return cost
         #                                                                    #
         # END cost function definition                                       #
@@ -213,7 +207,9 @@ class LBR4TrajectoryOptimization:
         self.ub_theta += [0.0 for _ in range(_NUM_DOF)]
 
         # Set the EE goal position for the robot to reach to
-        self.goal_position = self.lbr4.generate_random_ee_position()
+        # self.goal_position = self.lbr4.generate_random_ee_position()
+        self.goal_position = _GOAL_POS
+        print("Goal position: ", self.goal_position)
 
         # Add symbolic variables to build the optimization problem
         for k in range(self.num_timesteps - 2):  # Sans first/last steps
@@ -283,8 +279,6 @@ class LBR4TrajectoryOptimization:
         self.g += [self.goal_position-self.lbr4.get_ee_position(theta_N)]
         self.ubg += [0.0 for _ in range(_3D_DOF)]
         self.lbg += [0.0 for _ in range(_3D_DOF)]
-            # YOUR CODE HERE
-
         #                                                                     #
         # END add equality constraint                                         #
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -344,16 +338,7 @@ class LBR4TrajectoryOptimization:
             Output:
                 Symbolic computation of cost according to 1.3 description
             """
- 
-            x = self.lbr4.get_ee_position(theta)
-            diff = x-x_goal
-            sqr = diff**2
-            cost1 = SX.fabs(sqr[0]+sqr[1]+sqr[2])
-
-            diff2 = theta-theta_prev
-            sqr2 = diff2**2
-            cost2 = alpha*SX.fabs(sqr2[0]+sqr2[1]+sqr2[2]+sqr2[3]+sqr2[4]+sqr2[5]+sqr2[6])
-            cost = cost1+cost2
+            cost = norm_2(self.lbr4.get_ee_position(theta) - x_goal)**2 + alpha*norm_2(theta-theta_prev)**2
             return cost
         #                                                                    #
         # END cost function definition                                       #
@@ -377,7 +362,10 @@ class LBR4TrajectoryOptimization:
         self.ub_theta += [0.0 for _ in range(_NUM_DOF)]
 
         # Set the EE goal position for the robot to reach to
-        self.goal_position = self.lbr4.generate_random_ee_position()
+        # self.goal_position = self.lbr4.generate_random_ee_position()
+        self.goal_position = _GOAL_POS
+        print("Goal position: ", self.goal_position)
+
 
         # Add symbolic variables to build the optimization problem
         for k in range(self.num_timesteps - 2):  # Sans first/last steps
@@ -417,9 +405,7 @@ class LBR4TrajectoryOptimization:
         # TODO: Add an equality constraint that forces the end-effector       #
         # position to coincide with the goal position.                        #
         #                                                                     #
-        term1 = (self.lbr4.get_ee_position(theta) - self.goal_position)**2
-        term2 = alpha*(theta-theta_prev)**2
-        self.g += [term1 - term2]
+        self.g += [self.goal_position-self.lbr4.get_ee_position(theta_N)]
         self.ubg += [0.0 for _ in range(_3D_DOF)]
         self.lbg += [0.0 for _ in range(_3D_DOF)]
         #                                                                     #
@@ -466,16 +452,7 @@ class LBR4TrajectoryOptimization:
             Output:
                 Symbolic computation of cost according to 2 description
             """
-
-            x = self.lbr4.get_ee_position(theta)
-            diff = x-x_goal
-            sqr = diff**2
-            cost1 = SX.fabs(sqr[0]+sqr[1]+sqr[2])
-
-            diff2 = theta-theta_prev
-            sqr2 = diff2**2
-            cost2 = alpha*SX.fabs(sqr2[0]+sqr2[1]+sqr2[2]+sqr2[3]+sqr2[4]+sqr2[5]+sqr2[6])
-            cost = cost1+cost2
+            cost = norm_2(self.lbr4.get_ee_position(theta) - x_goal)**2 + (beta)/(norm_2(self.lbr4.get_ee_position(theta)-x_obst))
             return cost
         #                                                                    #
         # END cost function definition                                       #
@@ -525,8 +502,8 @@ class LBR4TrajectoryOptimization:
             # TODO: Add inequality constraint for this timestep to limit      #
             # instaneous joint velocity.                                      #
             #                                                                 #
-            
-                # COPY this constraint from previous problem
+
+            # COPY this constraint from previous problem
             self.g += [theta_k-theta_prev]
             self.lbg += [-gamma for _ in range(_NUM_DOF)]
             self.ubg += [gamma for _ in range(_NUM_DOF)]
